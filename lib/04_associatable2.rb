@@ -14,9 +14,10 @@ module Associatable
       through_for = through_options.foreign_key
 
       source_table = source_options.table_name
-      source_pk = source_options.primary_key
+      source_pri = source_options.primary_key
+      source_for = source_options.foreign_key
 
-      key_val = self.send(through_fk)
+      key_val = self.send(through_for)
       results = DBConnection.execute(<<-SQL, key_val)
         SELECT
           #{source_table}.*
@@ -25,11 +26,13 @@ module Associatable
         JOIN
           #{source_table}
         ON
-          #{through_table}.#{source_fk} = #{source_table}.#{source_pk}
+          #{through_table}.#{source_for} = #{source_table}.#{source_pri}
         WHERE
-          #{through_table}.#{through_pk} = ?
+          #{through_table}.#{through_pri} = ?
       SQL
 
       source_options.model_class.parse_all(results).first
+
+    end
   end
 end
